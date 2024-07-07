@@ -50,7 +50,7 @@ class Parser(argparse.ArgumentParser):
     def __init__(self):
         # Initialize parent class
         super(Parser, self).__init__(
-            prog='main.py',
+            prog='rpncalc.py',
             description='Calculator and visualizer for RPN arithmetic expressions'
         )
         # Add arguments
