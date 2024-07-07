@@ -61,12 +61,17 @@ def main(stdscr, args):
     stack = Stack()
     # Split input into list
     expression = args.expression.split()
+    # History
+    history = [None] * len(expression)
     # Loop through expression
-    for i, token in enumerate(expression):
+    i = 0
+    while i < len(expression):
         # Clear screen
         stdscr.clear()
         # Container for operation text
         operation_text = None
+        # Get token
+        token = expression[i]
         # If token is an operation
         if token in ['+', '-', '*', '/']:
             # Check size
@@ -84,6 +89,8 @@ def main(stdscr, args):
                 elif token == '/': final_val = val2 // val1
                 # Push value back to stack
                 stack.push(final_val)
+                # History
+                history[i] = f'{token} {val2} {val1}'
                 # Operation text
                 operation_text = f'Popped {val2} and {val1} from stack, pushed {val2} {token} {val1} = {final_val} to stack'
         # Otherwise, check if number
@@ -92,6 +99,8 @@ def main(stdscr, args):
             try:
                 # Successfully turned token into integer, add token to stack
                 stack.push(int(token))
+                # History
+                history[i] = token
                 # Set operation text
                 operation_text = f'Pushed {token} to stack'
             # Print error and break out of loop if not number
@@ -109,12 +118,47 @@ def main(stdscr, args):
         stdscr.addstr(6, 0, 'Operation')
         stdscr.addstr(7, 2, operation_text)
         # Refresh
-        stdscr.refresh
+        stdscr.refresh()
         # Wait for key
-        stdscr.getkey()
+        key = stdscr.getkey()
         # Break if error
         if operation_text.startswith('Error'):
             break
+        # Handle key
+        while True:
+            if key == 'KEY_LEFT' and i > 0:
+                # Undo operation
+                stack.pop()
+                # If was mathematical, push original values
+                if history[i][0] in ['+', '-', '*', '/']:
+                    stack.push(int(history[i].split()[1]))
+                    stack.push(int(history[i].split()[2]))
+                # Undo last operation
+                stack.pop()
+                # If was mathematical, push original values
+                if history[i-1][0] in ['+', '-', '*', '/']:
+                    stack.push(int(history[i-1].split()[1]))
+                    stack.push(int(history[i-1].split()[2]))
+                # Go back
+                i -= 1
+                break
+            elif key == 'KEY_RIGHT':
+                # Move forward
+                i += 1
+                break
+            key = stdscr.getkey()
+        # If last operation, print end screen
+        if i >= len(expression):
+            stdscr.clear()
+            # Stack
+            stdscr.addstr(0, 0, 'Stack')
+            stdscr.addstr(1, 2, stack.to_string() + ' (top)')
+            # Input
+            stdscr.addstr(3, 0, 'Input')
+            stdscr.addstr(4, 2, ' '.join(expression))
+            # Done text
+            stdscr.addstr(6, 0, 'Done! Press any key to exit...')
+            stdscr.getkey()
 
 if __name__ == '__main__':
     # Argument parser (need it out here to work correctly)
