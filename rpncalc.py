@@ -33,6 +33,10 @@ class Stack():
         self.size -= 1
         # Return value
         return retval
+    def peek(self):
+        if self.root is None:
+            return None 
+        return self.root.value
     def to_string(self):
         as_list = [None] * self.size
         root = self.root
@@ -49,18 +53,74 @@ class Parser(argparse.ArgumentParser):
             prog='main.py',
             description='Calculator and visualizer for RPN arithmetic expressions'
         )
-        # Add argument
+        # Add arguments
         self.add_argument('expression', help='RPN expression to evaluate')
+        self.add_argument('--infix', help='Set this flag if the supplied expression is infix', action='store_true')
+
+# Does a have higher or equal precedence than b?
+def precedence(a, b):
+    if a == '+' or a == '-':
+        if b == '+' or b == '-':
+            return True 
+        elif b == '*' or b == '/':
+            return False
+    elif a == '*' or a == '/':
+        if b == '*' or b == '/':
+            return False
+        elif b == '+' or b == '-':
+            return True
+    return None
+
+# Convert infix expression to postfix expression
+def infix_to_postfix(infix):
+    postfix = []
+    stack = Stack()
+    for token in infix:
+        if token in ['+', '-', '*', '/']:
+            # Pop higher or equal precedence operators from stack, stop on ( or empty stack
+            while precedence(stack.peek(), token):
+                postfix.append(stack.pop())
+            # Push operator to stack
+            stack.push(token)
+        elif token == '(':
+            stack.push(token)
+        elif token == ')':
+            # Add stack to postfix expression until encounter open paren
+            while stack.peek() != '(':
+                # If get all the way to end of stack w/o open paren, error
+                if stack.peek() is None:
+                    return None
+                postfix.append(stack.pop())
+            # Pop open paren
+            stack.pop()
+        else:
+            postfix.append(token)
+    # Pop rest of operators
+    while stack.peek() is not None:
+        postfix.append(stack.pop())
+        # If encounter open paren, error
+        if postfix[-1] == '(':
+            return None
+    return postfix
 
 def main(stdscr, args):
     # Keypress w/o enter
     curses.cbreak(True)
     # Arrow keys
     stdscr.keypad(True)
+    # Clear screen
+    stdscr.clear()
     # Initialize stack
     stack = Stack()
     # Split input into list
     expression = args.expression.split()
+    # Convert to postfix if is infix
+    if args.infix:
+        expression = infix_to_postfix(expression)
+        if expression is None:
+            stdscr.addstr(0, 0, 'Error: Invalid infix expresson. Press any key to continue...')
+            stdscr.getkey()
+            return
     # History
     history = [None] * len(expression)
     # Loop through expression
