@@ -113,7 +113,9 @@ def main(stdscr, args):
         # Input
         stdscr.addstr(3, 0, 'Input')
         stdscr.addstr(4, 2, ' '.join(expression))
-        stdscr.addstr(5, 2 + (2 * i), '^')
+        inpt_len = 0
+        for j in range(i): inpt_len += len(expression[j])
+        stdscr.addstr(5, 2 + i + inpt_len, '^' * len(expression[i]))
         # Operation
         stdscr.addstr(6, 0, 'Operation')
         stdscr.addstr(7, 2, operation_text)
