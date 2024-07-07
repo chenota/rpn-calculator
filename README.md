@@ -33,9 +33,9 @@ Operation
 
 You can use the right arrow key to advance through the input step-by-step, and you can use the left arrow key to navigate through the input backwards. This calculator works on integers and implements the four main mathematical operators (+, -, *, /); each operator must have exactly two operands.
 
-## Compatability
+## Compatibility
 
-rpn-calc relies on the curses library for its UI, which means rpn-calc should would out of the box on Mac and Linux machines, however Windows users will need to install curses in order for the program to work.
+rpn-calc uses the curses library for its UI, which means rpn-calc should work out of the box on Mac and Linux machines, however Windows users will need to install windows-curses in order for the program to work.
 
 ## Reverse Polish Notation
 
